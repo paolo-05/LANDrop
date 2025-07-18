@@ -29,4 +29,14 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
+
+# macOS bullshit
+.DS_Store
+
+# Build scripts
+build.sh
+
+
+# Builds
+/build

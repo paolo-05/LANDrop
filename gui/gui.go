@@ -10,16 +10,13 @@ import (
 	"strconv"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
-func Start(prefs config.Preferences, controller *server.ServerController) {
-	a := app.NewWithID("lan-drop")
-	a.SetIcon(resourceLogoPng)
+func Start(a fyne.App, prefs config.Preferences, controller *server.ServerController) {
 	w := a.NewWindow("LAN Drop")
 
 	url := fmt.Sprintf("http://%s:%d", utils.GetLocalIP(), prefs.Port)

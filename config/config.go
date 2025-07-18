@@ -1,39 +1,39 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
+
+	"fyne.io/fyne/v2"
 )
 
 type Preferences struct {
-	UploadDir         string `json:"upload_dir"`
-	Port              int    `json:"port"`
-	ShowNotifications bool   `json:"show_notifications"`
+	UploadDir         string
+	Port              int
+	ShowNotifications bool
 }
 
-var ConfigFile = "config.json"
+// LoadPreferences loads preferences using Fyne's preferences API
+func LoadPreferences(app fyne.App) Preferences {
+	// Default values
+	defaultUploadDir := "./uploads"
+	defaultPort := 8080
+	defaultShowNotifications := true
 
-func LoadPreferences() Preferences {
+	// Load from Fyne preferences
 	p := Preferences{
-		UploadDir:         "./uploads",
-		Port:              8080,
-		ShowNotifications: true,
+		UploadDir:         app.Preferences().StringWithFallback("upload_dir", defaultUploadDir),
+		Port:              app.Preferences().IntWithFallback("port", defaultPort),
+		ShowNotifications: app.Preferences().BoolWithFallback("show_notifications", defaultShowNotifications),
 	}
-	if _, err := os.Stat(ConfigFile); err == nil {
-		data, err := os.ReadFile(ConfigFile)
-		if err == nil {
-			json.Unmarshal(data, &p)
-		}
-	}
+
 	return p
 }
 
-func SavePreferences(p Preferences) error {
-	data, err := json.MarshalIndent(p, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(ConfigFile, data, 0644)
+// SavePreferences saves preferences using Fyne's preferences API
+func SavePreferences(app fyne.App, p Preferences) {
+	app.Preferences().SetString("upload_dir", p.UploadDir)
+	app.Preferences().SetInt("port", p.Port)
+	app.Preferences().SetBool("show_notifications", p.ShowNotifications)
 }
 
 func EnsureUploadDir(p Preferences) {

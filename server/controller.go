@@ -2,8 +2,11 @@ package server
 
 import (
 	"context"
+	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"lan-drop/config"
 	"net/http"
 	"os"
@@ -15,17 +18,23 @@ import (
 )
 
 type ServerController struct {
-	mu       sync.Mutex
-	server   *http.Server
-	port     int
-	folder   string
-	OnStatus func(string) // GUI callback
+	mu            sync.Mutex
+	server        *http.Server
+	port          int
+	folder        string
+	prefs         *config.Preferences // Add preferences to the controller
+	embeddedFiles embed.FS            // Embedded filesystem for static files
+	version       string              // Version of the application
+	OnStatus      func(string)        // GUI callback
 }
 
-func NewServerController(port int, folder string) *ServerController {
+func NewServerController(port int, folder string, prefs *config.Preferences, embeddedFiles embed.FS, version string) *ServerController {
 	return &ServerController{
-		port:   port,
-		folder: folder,
+		port:          port,
+		folder:        folder,
+		prefs:         prefs,
+		embeddedFiles: embeddedFiles,
+		version:       version,
 	}
 }
 
@@ -37,18 +46,37 @@ func (sc *ServerController) Start() {
 		sc.stopLocked()
 	}
 
+	// Create a new HTTP server
 	mux := http.NewServeMux()
 
-	// Serve the landing page
+	// Use the embedded filesystem for static files
+	content, err := fs.Sub(sc.embeddedFiles, "static")
+	if err != nil {
+		fmt.Println("Error creating embedded filesystem:", err)
+		return
+	}
+
+	// Update handlers to use embedded content
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join("static", "index.html"))
+		data, err := fs.ReadFile(content, "index.html")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write(data)
 	})
 
-	// Serve all static files (CSS, JS, etc.)
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	// Replace the static file server with one that serves from embedded files
+	mux.Handle("/static/", http.FileServer(http.FS(content)))
 
 	// Upload endpoint
 	mux.HandleFunc("/upload", sc.handleUpload)
+
+	// Version endpoint
+	mux.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+		sc.handleVersion(w, r, sc.version)
+	})
 
 	addr := fmt.Sprintf(":%d", sc.port)
 	sc.server = &http.Server{Addr: addr, Handler: mux}
@@ -81,6 +109,9 @@ func (sc *ServerController) Update(port int, folder string) {
 	sc.mu.Lock()
 	sc.port = port
 	sc.folder = folder
+	// Update the preferences as well
+	sc.prefs.Port = port
+	sc.prefs.UploadDir = folder
 	sc.mu.Unlock()
 	sc.Start()
 }
@@ -143,7 +174,7 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 			sc.OnStatus("Received: " + filepath.Base(savePath))
 		}
 	}
-	if config.LoadPreferences().ShowNotifications {
+	if sc.prefs.ShowNotifications {
 		fyne.CurrentApp().SendNotification(&fyne.Notification{
 			Title:   "LAN-Drop",
 			Content: fmt.Sprintf("Received %d file(s)", len(files)),
@@ -151,4 +182,11 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Write([]byte("Upload successful"))
+}
+
+func (c *ServerController) handleVersion(w http.ResponseWriter, r *http.Request, version string) {
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"version": version,
+	})
 }

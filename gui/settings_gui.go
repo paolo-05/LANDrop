@@ -31,7 +31,7 @@ func showSettingsWindow(a fyne.App, prefs *config.Preferences, onSave func(port 
 		if err == nil && port > 0 && port < 65536 {
 			prefs.Port = port
 			prefs.UploadDir = folderLabel.Text
-			config.SavePreferences(*prefs)
+			config.SavePreferences(a, *prefs)
 			onSave(prefs.Port, folderLabel.Text)
 			w.Close()
 		} else {
@@ -41,7 +41,7 @@ func showSettingsWindow(a fyne.App, prefs *config.Preferences, onSave func(port 
 
 	showNotifCheckbox := widget.NewCheck("Show upload notifications", func(checked bool) {
 		prefs.ShowNotifications = checked
-		config.SavePreferences(*prefs) // persist change
+		config.SavePreferences(a, *prefs) // persist change
 	})
 	showNotifCheckbox.SetChecked(prefs.ShowNotifications)
 

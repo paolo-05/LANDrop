@@ -169,6 +169,8 @@
     <div id="progress"><div id="bar"></div></div>
     <p id="status"></p>
 
+    <p id="version" style="color: #999; font-size: 0.85em"></p>
+
     <script>
       const dropArea = document.getElementById("drop-area");
       const fileInput = document.getElementById("file");
@@ -248,6 +250,22 @@
         bar.style.width = "0%";
         bar.style.backgroundColor = "#2193b0";
       }
+    </script>
+    <script>
+      // existing upload() function ...
+
+      // Fetch and display version info
+      fetch("/version")
+        .then((res) => res.json())
+        .then((data) => {
+          document.getElementById(
+            "version"
+          ).innerText = `LAN Drop v${data.version}`;
+        })
+        .catch(() => {
+          document.getElementById("version").innerText =
+            "LAN Drop (version info unavailable)";
+        });
     </script>
   </body>
 </html>
