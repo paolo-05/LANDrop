@@ -151,6 +151,8 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	noErrCount := 0
+
 	for _, fileHeader := range files {
 		file, err := fileHeader.Open()
 		if err != nil {
@@ -171,9 +173,12 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 		io.Copy(out, file)
 
 		if sc.OnStatus != nil {
+			noErrCount++
 			sc.OnStatus("Received: " + filepath.Base(savePath))
 		}
 	}
+	sc.OnStatus(fmt.Sprintf("Received %d file(s)", noErrCount))
+
 	if sc.prefs.ShowNotifications {
 		fyne.CurrentApp().SendNotification(&fyne.Notification{
 			Title:   "LAN-Drop",

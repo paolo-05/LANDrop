@@ -20,17 +20,10 @@ Almost as easy as Apple's right?
 
 ## Installing
 
-If you find yourself having trouble with the process please contact me.
+> If you find yourself having trouble with the process please contact me.
 
-### MacOS - arm64
+Navigate to the latest release and download the zip folder containing the version compatible with your os
 
-soon
+## Security Concerns
 
-### Linux - amd64
-
-Compatible with most of the linux distros, however I haven't really checked anything
-besides Debian (and Ubuntu)
-
-### Windows - amd64
-
-soon
+This app is currently under development, and I'm planning to add a sort of encryption layer, but right now it's very likely to be vulnerable to spoofing attacks via the http protocol.
