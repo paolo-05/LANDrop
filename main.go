@@ -28,5 +28,5 @@ func main() {
 	config.EnsureUploadDir(prefs)
 	controller := server.NewServerController(prefs.Port, prefs.UploadDir, &prefs, embeddedFiles, version)
 	controller.Start()
-	gui.Start(a, prefs, controller)
+	gui.Start(a, prefs, controller, version)
 }

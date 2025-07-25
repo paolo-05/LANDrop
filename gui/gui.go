@@ -16,18 +16,25 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func Start(a fyne.App, prefs config.Preferences, controller *server.ServerController) {
+func Start(a fyne.App, prefs config.Preferences, controller *server.ServerController, version string) {
 	w := a.NewWindow("LAN Drop")
 
 	url := fmt.Sprintf("http://%s:%d", utils.GetLocalIP(), prefs.Port)
 
-	urlLabel := widget.NewLabel("Server running at: " + url)
+	copyableURL := widget.NewButton(url, func() {
+		a.Clipboard().SetContent(url)
+		dialog.ShowInformation("Copied", "URL copied to clipboard", w)
+	})
+	copyableURL.Importance = widget.LowImportance // Makes it look more like a label
+	// copyableURL.DisableableWidget.BaseWidget // Make it visually static
 
+	// QR Code
 	qrImg := canvas.NewImageFromImage(qrcode.GenerateQRImage(url))
 	qrImg.FillMode = canvas.ImageFillContain
 	qrImg.SetMinSize(fyne.NewSize(256, 256))
 	qrContainer := container.NewCenter(qrImg)
 
+	// Status label (updated dynamically)
 	statusLabel := widget.NewLabel("")
 
 	controller.OnStatus = func(msg string) {
@@ -41,6 +48,7 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 		})
 	}
 
+	// Buttons
 	openBtn := widget.NewButton("Open Uploads Folder", func() {
 		go func() {
 			if err := utils.OpenFolder(prefs.UploadDir); err != nil {
@@ -51,13 +59,13 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 
 	settingsBtn := widget.NewButton("Settings", func() {
 		showSettingsWindow(a, &prefs, func(port int, folder string) {
-			// Called after clicking "Save"
+			// Update controller
 			controller.Update(port, folder)
 
+			// Update GUI
 			url = fmt.Sprintf("http://%s:%d", utils.GetLocalIP(), port)
-			urlLabel.SetText("Server running at: " + url)
-
-			qrImg.Image = qrcode.GenerateQRImage(fmt.Sprintf("http://%s:%d", utils.GetLocalIP(), port))
+			copyableURL.SetText(url)
+			qrImg.Image = qrcode.GenerateQRImage(url)
 			qrImg.Refresh()
 			statusLabel.SetText("Settings saved. Server updated.")
 			w.SetTitle("LAN Drop - Port: " + strconv.Itoa(port) + ", Folder: " + folder)
@@ -65,14 +73,25 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 		})
 	})
 
-	w.SetContent(container.NewVBox(
-		urlLabel,
+	// Website link
+	websiteLink := widget.NewHyperlink("Having trouble? Visit my personal website to gather support", utils.ParseURL("https://bianchessipaolo.works"))
+
+	versionLabel := widget.NewLabelWithStyle("LAN Drop v"+version, fyne.TextAlignCenter, fyne.TextStyle{Italic: true})
+
+	// Layout
+	content := container.NewVBox(
+		// widget.NewLabelWithStyle("LAN Drop", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		qrContainer,
+		widget.NewLabel("Click below to copy server URL:"),
+		copyableURL,
 		statusLabel,
 		openBtn,
 		settingsBtn,
-	))
+		container.NewCenter(websiteLink),
+		versionLabel,
+	)
 
-	w.Resize(fyne.NewSize(400, 520))
+	w.SetContent(content)
+	w.Resize(fyne.NewSize(400, 560))
 	w.ShowAndRun()
 }
