@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"lan-drop/config"
+	"lan-drop/p2p"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -46,6 +47,9 @@ func (sc *ServerController) Start() {
 		sc.stopLocked()
 	}
 
+	// Set up the status reporter for P2P
+	p2p.SetStatusReporter(sc)
+
 	// Create a new HTTP server
 	mux := http.NewServeMux()
 
@@ -72,6 +76,11 @@ func (sc *ServerController) Start() {
 
 	// Upload endpoint
 	mux.HandleFunc("/upload", sc.handleUpload)
+
+	// Signaling endpoint
+	mux.HandleFunc("/signaling", func(w http.ResponseWriter, r *http.Request) {
+		p2p.SignalingHandler(w, r, sc.prefs)
+	})
 
 	// Version endpoint
 	mux.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +123,13 @@ func (sc *ServerController) Update(port int, folder string) {
 	sc.prefs.UploadDir = folder
 	sc.mu.Unlock()
 	sc.Start()
+}
+
+// ReportStatus implements the p2p.StatusReporter interface
+func (sc *ServerController) ReportStatus(message string) {
+	if sc.OnStatus != nil {
+		sc.OnStatus(message)
+	}
 }
 
 func (sc *ServerController) safeSavePath(filename string) string {
@@ -189,7 +205,7 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte("Upload successful"))
 }
 
-func (c *ServerController) handleVersion(w http.ResponseWriter, r *http.Request, version string) {
+func (c *ServerController) handleVersion(w http.ResponseWriter, _ *http.Request, version string) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]string{
 		"version": version,

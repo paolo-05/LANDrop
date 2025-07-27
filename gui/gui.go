@@ -39,6 +39,8 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 
 	controller.OnStatus = func(msg string) {
 		fyne.DoAndWait(func() {
+			// Limit status message length to avoid UI overflow
+			// This is a simple way to ensure the UI remains clean
 			const maxStatusLength = 100
 			safeMsg := msg
 			if len(safeMsg) > maxStatusLength {

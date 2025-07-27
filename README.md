@@ -27,3 +27,11 @@ Navigate to the latest release and download the zip folder containing the versio
 ## Security Concerns
 
 This app is currently under development, and I'm planning to add a sort of encryption layer, but right now it's very likely to be vulnerable to spoofing attacks via the http protocol.
+
+In the latest version of LANDrop the HTTP protocol is only used for creating a P2P data tunnel,
+
+## Credits and Final Notes
+
+- [Fyne.io](https://fyne.io/) GUI library
+- This project is **NOT** affiliated with [LAN Drop](https://landrop.app/), however go support their project since it's really amazing.
+- The release are following the [Semantic Versioning](https://semver.org/). Every release has a tag in the MAJOR.MINOR.PATCH form.
