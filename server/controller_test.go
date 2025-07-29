@@ -35,6 +35,8 @@ func TestNewServerController(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")
@@ -66,6 +68,8 @@ func TestServerControllerReportStatus(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")
@@ -91,6 +95,8 @@ func TestServerControllerUpdate(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")
@@ -121,6 +127,8 @@ func TestSafeSavePath(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")
@@ -159,6 +167,8 @@ func TestSafeSavePathWithExtension(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")
@@ -181,6 +191,8 @@ func TestHandleVersion(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "1.2.3")
@@ -280,6 +292,8 @@ func TestHandleUploadWrongMethod(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")
@@ -300,6 +314,8 @@ func TestHandleUploadNoFiles(t *testing.T) {
 		UploadDir:         tempDir,
 		Port:              8080,
 		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
 	}
 
 	controller := NewServerController(8080, tempDir, prefs, testEmbeddedFiles, "test-version")

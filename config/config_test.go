@@ -28,6 +28,14 @@ func TestPreferencesDefaults(t *testing.T) {
 	if !prefs.ShowNotifications {
 		t.Errorf("Expected default ShowNotifications to be true, got %v", prefs.ShowNotifications)
 	}
+
+	if !prefs.AutoUpdateCheck {
+		t.Errorf("Expected default AutoUpdateCheck to be true, got %v", prefs.AutoUpdateCheck)
+	}
+
+	if !prefs.AutoOpenFiles {
+		t.Errorf("Expected default AutoOpenFiles to be true, got %v", prefs.AutoOpenFiles)
+	}
 }
 
 func TestSaveAndLoadPreferences(t *testing.T) {
@@ -40,6 +48,8 @@ func TestSaveAndLoadPreferences(t *testing.T) {
 		UploadDir:         "/tmp/test-uploads",
 		Port:              9090,
 		ShowNotifications: false,
+		AutoUpdateCheck:   false,
+		AutoOpenFiles:     false,
 	}
 
 	// Save preferences
@@ -59,6 +69,14 @@ func TestSaveAndLoadPreferences(t *testing.T) {
 
 	if loadedPrefs.ShowNotifications != testPrefs.ShowNotifications {
 		t.Errorf("Expected ShowNotifications %v, got %v", testPrefs.ShowNotifications, loadedPrefs.ShowNotifications)
+	}
+
+	if loadedPrefs.AutoUpdateCheck != testPrefs.AutoUpdateCheck {
+		t.Errorf("Expected AutoUpdateCheck %v, got %v", testPrefs.AutoUpdateCheck, loadedPrefs.AutoUpdateCheck)
+	}
+
+	if loadedPrefs.AutoOpenFiles != testPrefs.AutoOpenFiles {
+		t.Errorf("Expected AutoOpenFiles %v, got %v", testPrefs.AutoOpenFiles, loadedPrefs.AutoOpenFiles)
 	}
 }
 

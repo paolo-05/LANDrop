@@ -5,9 +5,11 @@ import (
 	"lan-drop/config"
 	"lan-drop/qrcode"
 	"lan-drop/server"
+	"lan-drop/update"
 	"lan-drop/utils"
 	"log"
 	"strconv"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -16,7 +18,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func Start(a fyne.App, prefs config.Preferences, controller *server.ServerController, version string) {
+func Start(a fyne.App, prefs *config.Preferences, controller *server.ServerController, version string) {
 	w := a.NewWindow("LAN Drop")
 
 	url := fmt.Sprintf("http://%s:%d", utils.GetLocalIP(), prefs.Port)
@@ -60,7 +62,7 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 	})
 
 	settingsBtn := widget.NewButton("Settings", func() {
-		showSettingsWindow(a, &prefs, func(port int, folder string) {
+		showSettingsWindow(a, prefs, func(port int, folder string) {
 			// Update controller
 			controller.Update(port, folder)
 
@@ -71,12 +73,19 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 			qrImg.Refresh()
 			statusLabel.SetText("Settings saved. Server updated.")
 			w.SetTitle("LAN Drop - Port: " + strconv.Itoa(port) + ", Folder: " + folder)
-			dialog.ShowInformation("Settings Updated", fmt.Sprintf("Server is now running on port %d and uploads are saved to %s", port, folder), w)
+			dialog.ShowInformation("Settings Updated",
+				fmt.Sprintf("Server is now running on port %d and uploads are saved to %s", port, folder), w)
 		})
 	})
 
+	// Check for updates button (manual check)
+	updateBtn := widget.NewButton("Check for Updates", func() {
+		update.ManualUpdateCheck(a, w, "paolo-05", "LANDrop", version)
+	})
+
 	// Website link
-	websiteLink := widget.NewHyperlink("Having trouble? Visit LAN Drop to gather support", utils.ParseURL("https://landrop.bianchessipaolo.works"))
+	websiteLink := widget.NewHyperlink("Having trouble? Visit LAN Drop to gather support",
+		utils.ParseURL("https://landrop.bianchessipaolo.works"))
 
 	versionLabel := widget.NewLabelWithStyle("LAN Drop v"+version, fyne.TextAlignCenter, fyne.TextStyle{Italic: true})
 
@@ -89,11 +98,22 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 		statusLabel,
 		openBtn,
 		settingsBtn,
+		updateBtn,
 		container.NewCenter(websiteLink),
 		versionLabel,
 	)
 
 	w.SetContent(content)
-	w.Resize(fyne.NewSize(400, 560))
+	w.Resize(fyne.NewSize(400, 600)) // Increased height for update button
+
+	// Perform automatic update check on startup (if enabled)
+	if prefs.AutoUpdateCheck {
+		go func() {
+			// Small delay to let the UI fully load
+			time.Sleep(2 * time.Second)
+			update.CheckAndPromptForUpdates(a, w, "paolo-05", "LANDrop", version, true)
+		}()
+	}
+
 	w.ShowAndRun()
 }

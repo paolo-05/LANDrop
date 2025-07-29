@@ -3,6 +3,7 @@ package utils
 import (
 	"log"
 	"path/filepath"
+	"slices"
 
 	"fyne.io/fyne/v2"
 )
@@ -67,12 +68,7 @@ func IsImageFile(filePath string) bool {
 	ext := filepath.Ext(filePath)
 	imageExts := []string{".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".svg"}
 
-	for _, imgExt := range imageExts {
-		if ext == imgExt {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(imageExts, ext)
 }
 
 // IsDocumentFile checks if the file is a document that should be opened in default viewer
@@ -80,12 +76,7 @@ func IsDocumentFile(filePath string) bool {
 	ext := filepath.Ext(filePath)
 	docExts := []string{".pdf", ".doc", ".docx", ".txt", ".rtf", ".pages"}
 
-	for _, docExt := range docExts {
-		if ext == docExt {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(docExts, ext)
 }
 
 // GetBestActionForFile determines the best action for a file type

@@ -41,3 +41,4 @@ FyneApp.toml
 Makefile
 /build
 /fyne-cross
+lan-drop

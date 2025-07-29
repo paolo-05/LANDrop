@@ -45,6 +45,18 @@ func showSettingsWindow(a fyne.App, prefs *config.Preferences, onSave func(port 
 	})
 	showNotifCheckbox.SetChecked(prefs.ShowNotifications)
 
+	autoUpdateCheckbox := widget.NewCheck("Check for updates automatically", func(checked bool) {
+		prefs.AutoUpdateCheck = checked
+		config.SavePreferences(a, *prefs) // persist change
+	})
+	autoUpdateCheckbox.SetChecked(prefs.AutoUpdateCheck)
+
+	autoOpenCheckbox := widget.NewCheck("Automatically open uploaded files", func(checked bool) {
+		prefs.AutoOpenFiles = checked
+		config.SavePreferences(a, *prefs) // persist change
+	})
+	autoOpenCheckbox.SetChecked(prefs.AutoOpenFiles)
+
 	w.SetContent(container.NewVBox(
 		widget.NewLabel("HTTP Port:"),
 		portEntry,
@@ -52,6 +64,8 @@ func showSettingsWindow(a fyne.App, prefs *config.Preferences, onSave func(port 
 		folderLabel,
 		selectFolderBtn,
 		showNotifCheckbox,
+		autoUpdateCheckbox,
+		autoOpenCheckbox,
 		saveBtn,
 	))
 	w.Resize(fyne.NewSize(600, 400))

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"lan-drop/config"
 	"lan-drop/utils"
@@ -161,7 +162,17 @@ var (
 	currentFileName  string
 	expectedFileSize int64
 	receivedBytes    int64
+	transferSession  *TransferSession
 )
+
+// TransferSession tracks a batch of file transfers
+type TransferSession struct {
+	ID            string
+	TotalFiles    int
+	ReceivedFiles int
+	Files         []string // Track received file paths
+	StartTime     time.Time
+}
 
 // safeSavePath generates a unique file path to avoid overwriting existing files
 func safeSavePath(folder, filename string) string {
@@ -184,7 +195,79 @@ func safeSavePath(folder, filename string) string {
 func dcOnMessage(prefs *config.Preferences) func(msg webrtc.DataChannelMessage) {
 	return func(msg webrtc.DataChannelMessage) {
 		if msg.IsString {
-			// Expecting metadata
+			// Parse message type first
+			var msgType struct {
+				Type string `json:"type,omitempty"`
+			}
+			if err := json.Unmarshal(msg.Data, &msgType); err == nil && msgType.Type != "" {
+				// Handle session messages
+				switch msgType.Type {
+				case "session_start":
+					var sessionMsg struct {
+						Type       string `json:"type"`
+						SessionID  string `json:"session_id"`
+						TotalFiles int    `json:"total_files"`
+					}
+					if err := json.Unmarshal(msg.Data, &sessionMsg); err == nil {
+						transferSession = &TransferSession{
+							ID:            sessionMsg.SessionID,
+							TotalFiles:    sessionMsg.TotalFiles,
+							ReceivedFiles: 0,
+							Files:         make([]string, 0, sessionMsg.TotalFiles),
+							StartTime:     time.Now(),
+						}
+						// Silent session start - no status reporting during auto-upload
+					}
+					return
+				case "session_end":
+					if transferSession != nil {
+						fileCount := transferSession.TotalFiles
+
+						// Show notification when user confirms upload (clicks Upload button)
+						if prefs.ShowNotifications {
+							if fileCount == 1 && len(transferSession.Files) > 0 {
+								// Single file - show specific file notification and open file
+								filePath := transferSession.Files[0]
+								action := utils.GetBestActionForFile(filePath)
+								utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
+									Title:    "LAN-Drop",
+									Content:  fmt.Sprintf("Received file: %s", filepath.Base(filePath)),
+									FilePath: filePath,
+									Action:   action,
+								})
+
+								// Auto-open single file if enabled
+								if prefs.AutoOpenFiles {
+									utils.HandleFileAction(filePath, action)
+								}
+							} else {
+								// Multiple files or no files tracked yet - show generic notification and open folder
+								utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
+									Title:    "LAN-Drop",
+									Content:  fmt.Sprintf("Received %d files", fileCount),
+									FilePath: prefs.UploadDir,
+									Action:   "show",
+								})
+
+								// Auto-open upload folder if enabled
+								if prefs.AutoOpenFiles {
+									utils.OpenFolder(prefs.UploadDir)
+								}
+							}
+						}
+
+						transferSession = nil
+						if fileCount == 1 {
+							reportStatus("File received")
+						} else {
+							reportStatus(fmt.Sprintf("Received %d files", fileCount))
+						}
+					}
+					return
+				}
+			}
+
+			// Handle file metadata (existing logic, but track in session)
 			var meta struct {
 				Name string `json:"name"`
 				Size int64  `json:"size"`
@@ -213,7 +296,6 @@ func dcOnMessage(prefs *config.Preferences) func(msg webrtc.DataChannelMessage) 
 				displayName = displayName[:7] + "..."
 			}
 
-			// log.Printf("Receiving file: %s (%d bytes)\n", meta.Name, meta.Size)
 			reportStatus(fmt.Sprintf("Receiving: %s", displayName))
 		} else {
 			// Append chunk to file
@@ -238,23 +320,21 @@ func dcOnMessage(prefs *config.Preferences) func(msg webrtc.DataChannelMessage) 
 					displayName = displayName[:7] + "..."
 				}
 
+				filePath := filepath.Join(prefs.UploadDir, currentFileName)
+
 				// log.Printf("✅ File %s received completely (%d bytes)\n", currentFileName, receivedBytes)
 				reportStatus(fmt.Sprintf("Received: %s", displayName))
 
-				// Show notification if enabled with file action
-				if prefs.ShowNotifications {
-					filePath := filepath.Join(prefs.UploadDir, currentFileName)
-					action := utils.GetBestActionForFile(filePath)
+				// Track file in transfer session
+				if transferSession != nil {
+					transferSession.Files = append(transferSession.Files, filePath)
+					transferSession.ReceivedFiles++
 
-					utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
-						Title:    "LAN-Drop",
-						Content:  fmt.Sprintf("Received file: %s", displayName),
-						FilePath: filePath,
-						Action:   action,
-					})
-
-					// Also automatically perform the action (open file or show in finder)
-					utils.HandleFileAction(filePath, action)
+					// NO individual file notifications during auto-upload
+					// Notifications only happen on session_end when user clicks upload
+				} else {
+					// Legacy mode - single file without session (also no notification during auto-upload)
+					// User will get notification only when they click upload button
 				}
 
 				currentFile.Close()

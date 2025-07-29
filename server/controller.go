@@ -78,6 +78,9 @@ func (sc *ServerController) Start() {
 	// Upload endpoint
 	mux.HandleFunc("/upload", sc.handleUpload)
 
+	// Delete endpoint for file cleanup
+	mux.HandleFunc("/delete", sc.handleDelete)
+
 	// Signaling endpoint
 	mux.HandleFunc("/signaling", func(w http.ResponseWriter, r *http.Request) {
 		p2p.SignalingHandler(w, r, sc.prefs)
@@ -93,7 +96,7 @@ func (sc *ServerController) Start() {
 
 	go func() {
 		if sc.OnStatus != nil {
-			sc.OnStatus(fmt.Sprintf("Server listening on %s", addr))
+			sc.OnStatus(fmt.Sprintf("Server listening on port %d", sc.port))
 		}
 		err := sc.server.ListenAndServe()
 		if err != nil && sc.OnStatus != nil {
@@ -211,8 +214,10 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 				Action:   action,
 			})
 
-			// Automatically perform the action
-			utils.HandleFileAction(filePath, action)
+			// Automatically perform the action only if enabled
+			if sc.prefs.AutoOpenFiles {
+				utils.HandleFileAction(filePath, action)
+			}
 		} else {
 			// Multiple files - show notification and open upload folder
 			utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
@@ -222,12 +227,61 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 				Action:   "show",
 			})
 
-			// Open the upload folder to show all files
-			utils.OpenFolder(sc.prefs.UploadDir)
+			// Open the upload folder to show all files only if enabled
+			if sc.prefs.AutoOpenFiles {
+				utils.OpenFolder(sc.prefs.UploadDir)
+			}
 		}
 	}
 
 	w.Write([]byte("Upload successful"))
+}
+
+// handleDelete removes uploaded files that were not confirmed
+func (sc *ServerController) handleDelete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	filename := r.FormValue("filename")
+	if filename == "" {
+		http.Error(w, "Filename required", http.StatusBadRequest)
+		return
+	}
+
+	// Construct file path
+	filePath := filepath.Join(sc.prefs.UploadDir, filename)
+
+	// Security check: ensure the file is within the upload directory
+	uploadDir, err := filepath.Abs(sc.prefs.UploadDir)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	targetFile, err := filepath.Abs(filePath)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if !strings.HasPrefix(targetFile, uploadDir) {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
+	// Delete the file
+	if err := os.Remove(filePath); err != nil {
+		if os.IsNotExist(err) {
+			http.Error(w, "File not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to delete file", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Write([]byte("File deleted successfully"))
 }
 
 func (c *ServerController) handleVersion(w http.ResponseWriter, _ *http.Request, version string) {
