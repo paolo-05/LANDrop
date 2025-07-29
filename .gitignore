@@ -34,10 +34,10 @@ go.work.sum
 # macOS bullshit
 .DS_Store
 
-# Build scripts
+# CI & Build artifacts
 build.sh
-
-
-# Builds
+run_tests.sh
+FyneApp.toml
+Makefile
 /build
 /fyne-cross

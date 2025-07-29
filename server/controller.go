@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"lan-drop/config"
 	"lan-drop/p2p"
+	"lan-drop/utils"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -168,6 +169,7 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 	}
 
 	noErrCount := 0
+	var savedFiles []string
 
 	for _, fileHeader := range files {
 		file, err := fileHeader.Open()
@@ -192,14 +194,37 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 			noErrCount++
 			sc.OnStatus("Received: " + filepath.Base(savePath))
 		}
+		savedFiles = append(savedFiles, savePath)
 	}
 	sc.OnStatus(fmt.Sprintf("Received %d file(s)", noErrCount))
 
 	if sc.prefs.ShowNotifications {
-		fyne.CurrentApp().SendNotification(&fyne.Notification{
-			Title:   "LAN-Drop",
-			Content: fmt.Sprintf("Received %d file(s)", len(files)),
-		})
+		if len(savedFiles) == 1 {
+			// Single file - use enhanced notification with file action
+			filePath := savedFiles[0]
+			action := utils.GetBestActionForFile(filePath)
+
+			utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
+				Title:    "LAN-Drop",
+				Content:  fmt.Sprintf("Received file: %s", filepath.Base(filePath)),
+				FilePath: filePath,
+				Action:   action,
+			})
+
+			// Automatically perform the action
+			utils.HandleFileAction(filePath, action)
+		} else {
+			// Multiple files - show notification and open upload folder
+			utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
+				Title:    "LAN-Drop",
+				Content:  fmt.Sprintf("Received %d files", len(savedFiles)),
+				FilePath: sc.prefs.UploadDir,
+				Action:   "show",
+			})
+
+			// Open the upload folder to show all files
+			utils.OpenFolder(sc.prefs.UploadDir)
+		}
 	}
 
 	w.Write([]byte("Upload successful"))

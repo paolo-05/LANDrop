@@ -6,6 +6,7 @@ import (
 	"lan-drop/gui"
 	"lan-drop/server"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 )
 
@@ -14,9 +15,18 @@ import (
 //go:embed static/*
 var embeddedFiles embed.FS
 
+// embed app icon
+//
+//go:embed assets/logo.png
+var iconResource []byte
+
 func main() {
 	// Create the Fyne app first
-	a := app.NewWithID("lan-drop")
+	a := app.NewWithID("works.bianchessipaolo.landrop")
+
+	// Set app icon using embedded resource
+	iconRes := fyne.NewStaticResource("icon.png", iconResource)
+	a.SetIcon(iconRes)
 
 	// read version from metadata
 	version := a.Metadata().Version

@@ -76,7 +76,7 @@ func Start(a fyne.App, prefs config.Preferences, controller *server.ServerContro
 	})
 
 	// Website link
-	websiteLink := widget.NewHyperlink("Having trouble? Visit my personal website to gather support", utils.ParseURL("https://bianchessipaolo.works"))
+	websiteLink := widget.NewHyperlink("Having trouble? Visit LAN Drop to gather support", utils.ParseURL("https://landrop.bianchessipaolo.works"))
 
 	versionLabel := widget.NewLabelWithStyle("LAN Drop v"+version, fyne.TextAlignCenter, fyne.TextStyle{Italic: true})
 

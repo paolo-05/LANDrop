@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"lan-drop/config"
+	"lan-drop/utils"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -240,12 +241,20 @@ func dcOnMessage(prefs *config.Preferences) func(msg webrtc.DataChannelMessage) 
 				// log.Printf("✅ File %s received completely (%d bytes)\n", currentFileName, receivedBytes)
 				reportStatus(fmt.Sprintf("Received: %s", displayName))
 
-				// Show notification if enabled
+				// Show notification if enabled with file action
 				if prefs.ShowNotifications {
-					fyne.CurrentApp().SendNotification(&fyne.Notification{
-						Title:   "LAN-Drop",
-						Content: fmt.Sprintf("Received file: %s", displayName),
+					filePath := filepath.Join(prefs.UploadDir, currentFileName)
+					action := utils.GetBestActionForFile(filePath)
+
+					utils.SendNotificationWithAction(fyne.CurrentApp(), utils.NotificationConfig{
+						Title:    "LAN-Drop",
+						Content:  fmt.Sprintf("Received file: %s", displayName),
+						FilePath: filePath,
+						Action:   action,
 					})
+
+					// Also automatically perform the action (open file or show in finder)
+					utils.HandleFileAction(filePath, action)
 				}
 
 				currentFile.Close()

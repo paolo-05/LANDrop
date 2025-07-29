@@ -2,5 +2,5 @@
   Icon = "assets/logo.png"
   Name = "LAN Drop"
   ID = "works.bianchessipaolo.landrop"
-  Version = "1.0.1"
-  Build = 37
+  Version = "2.0.0"
+  Build = 42
