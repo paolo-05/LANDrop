@@ -5,8 +5,6 @@ import (
 	"lan-drop/config"
 	"lan-drop/gui"
 	"lan-drop/server"
-	"log"
-	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -23,11 +21,11 @@ var embeddedFiles embed.FS
 var iconResource []byte
 
 func main() {
-	f, err := os.OpenFile("landrop.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	log.SetOutput(f)
+	// f, err := os.OpenFile("landrop.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	log.Fatalf("error opening file: %v", err)
+	// }
+	// log.SetOutput(f)
 
 	// Create the Fyne app first
 	a := app.NewWithID("works.bianchessipaolo.landrop")
