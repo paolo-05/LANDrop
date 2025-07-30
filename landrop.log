@@ -1,0 +1,11 @@
+2025/07/30 19:25:10 Update check skipped (recently checked or disabled)
+2025/07/30 19:25:33 WebSocket connection established
+2025/07/30 19:25:33 Received signaling message: {"type":"offer","sdp":"v=0\r\no=- 1671778052365405633 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\na=group:BUNDLE 0\r\na=extmap-allow-mixed\r\na=msid-semantic: WMS\r\nm=application 9 UDP/DTLS/SCTP webrtc-datachannel\r\nc=IN IP4 0.0.0.0\r\na=ice-ufrag:J7ig\r\na=ice-pwd:HB6jy+bBI7bzkYH/vkDa2pi2\r\na=ice-options:trickle\r\na=fingerprint:sha-256 0A:70:07:01:37:96:79:2C:5D:E5:BB:9A:BD:89:AF:4F:86:F0:7E:7B:CF:65:74:45:AA:61:0F:C4:00:C8:8A:73\r\na=setup:actpass\r\na=mid:0\r\na=sctp-port:5000\r\na=max-message-size:262144\r\n"}
+2025/07/30 19:25:33 Peer connection state changed: connecting
+2025/07/30 19:25:33 Received signaling message: {"type":"candidate","candidate":"candidate:1438844626 1 udp 2113937151 cf9c7fb6-e073-442d-9407-3460de6f877c.local 52584 typ host generation 0 ufrag J7ig network-cost 999"}
+2025/07/30 19:25:33 Peer connection state changed: connected
+2025/07/30 19:25:33 Data channel opened
+2025/07/30 19:25:41 File ready for action: /Users/paolo/Desktop/LANDrop (action: show)
+2025/07/30 19:25:49 WebSocket read error: websocket: close 1001 (going away)
+2025/07/30 19:25:49 Data channel closed
+2025/07/30 19:25:55 Peer connection state changed: disconnected
