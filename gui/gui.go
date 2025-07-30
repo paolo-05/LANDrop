@@ -55,8 +55,16 @@ func Start(a fyne.App, prefs *config.Preferences, controller *server.ServerContr
 	// Buttons
 	openBtn := widget.NewButton("Open Uploads Folder", func() {
 		go func() {
+			// Ensure the upload directory exists before trying to open it
+			config.EnsureUploadDir(*prefs)
+
 			if err := utils.OpenFolder(prefs.UploadDir); err != nil {
-				log.Println("Error opening folder:", err)
+				log.Printf("Error opening folder %s: %v", prefs.UploadDir, err)
+
+				// Show user-friendly error message on the UI thread
+				fyne.DoAndWait(func() {
+					dialog.ShowError(fmt.Errorf("could not open uploads folder: %s\nError: %v", prefs.UploadDir, err), w)
+				})
 			}
 		}()
 	})

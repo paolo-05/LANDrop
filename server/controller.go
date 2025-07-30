@@ -10,6 +10,7 @@ import (
 	"lan-drop/config"
 	"lan-drop/p2p"
 	"lan-drop/utils"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -229,7 +230,9 @@ func (sc *ServerController) handleUpload(w http.ResponseWriter, r *http.Request)
 
 			// Open the upload folder to show all files only if enabled
 			if sc.prefs.AutoOpenFiles {
-				utils.OpenFolder(sc.prefs.UploadDir)
+				if err := utils.OpenFolder(sc.prefs.UploadDir); err != nil {
+					log.Printf("Failed to auto-open upload folder: %v", err)
+				}
 			}
 		}
 	}

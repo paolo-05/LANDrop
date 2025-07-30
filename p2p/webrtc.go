@@ -251,7 +251,9 @@ func dcOnMessage(prefs *config.Preferences) func(msg webrtc.DataChannelMessage) 
 
 								// Auto-open upload folder if enabled
 								if prefs.AutoOpenFiles {
-									utils.OpenFolder(prefs.UploadDir)
+									if err := utils.OpenFolder(prefs.UploadDir); err != nil {
+										log.Printf("Failed to auto-open upload folder: %v", err)
+									}
 								}
 							}
 						}
