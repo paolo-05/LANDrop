@@ -42,3 +42,7 @@ Makefile
 /build
 /fyne-cross
 lan-drop
+
+# live reload temp files
+/tmp
+.air.TOML
