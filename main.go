@@ -42,6 +42,7 @@ func main() {
 
 	prefs := config.LoadPreferences(a)
 	config.EnsureUploadDir(prefs)
+	config.EnsureSharedDir(prefs)
 	controller := server.NewServerController(prefs.Port, prefs.UploadDir, &prefs, embeddedFiles, version)
 	controller.Start()
 	gui.Start(a, &prefs, controller, version)

@@ -197,6 +197,194 @@
         .file-name {
           color: #eee;
         }
+
+        /* Tab Styles for Dark Mode */
+        .tab-container {
+          border-bottom-color: #444;
+        }
+
+        .tab-button {
+          color: #aaa;
+        }
+
+        .tab-button:hover {
+          color: #4ca4c8;
+          background-color: #2a2a2a;
+        }
+
+        .tab-button.active {
+          color: #4ca4c8;
+          border-bottom-color: #4ca4c8;
+        }
+
+        #file-browser {
+          background: #2b2b2b;
+        }
+
+        .browser-item:hover {
+          background-color: #3a3a3a;
+        }
+
+        .file-name-browser {
+          color: #eee;
+        }
+
+        .file-details {
+          color: #aaa;
+        }
+
+        .download-btn {
+          background: #4ca4c8;
+        }
+
+        .download-btn:hover {
+          background: #3a96b4;
+        }
+
+        .back-btn {
+          background: #555;
+        }
+
+        .back-btn:hover {
+          background: #666;
+        }
+      }
+
+      /* Tab Styles */
+      .tab-container {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .tab-button {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        background: none;
+        color: #666;
+        font-size: 1em;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+      }
+
+      .tab-button:hover {
+        color: #2193b0;
+        background-color: #f8f9fa;
+      }
+
+      .tab-button.active {
+        color: #2193b0;
+        border-bottom-color: #2193b0;
+        font-weight: 600;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* File Browser Styles */
+      #file-browser {
+        text-align: left;
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .browser-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        margin: 2px 0;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .browser-item:hover {
+        background-color: #f5f5f5;
+      }
+
+      .browser-item.directory {
+        font-weight: 500;
+      }
+
+      .browser-item.directory::before {
+        content: "📁 ";
+        margin-right: 8px;
+      }
+
+      .browser-item.file::before {
+        content: "📄 ";
+        margin-right: 8px;
+      }
+
+      .file-info {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+
+      .file-name-browser {
+        font-size: 1em;
+        color: #333;
+      }
+
+      .file-details {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 2px;
+      }
+
+      .download-btn {
+        background: #2193b0;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 0.8em;
+      }
+
+      .download-btn:hover {
+        background: #1a7a96;
+      }
+
+      .back-btn {
+        background: #666;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+      }
+
+      .back-btn:hover {
+        background: #555;
+      }
+
+      .refresh-btn {
+        background: #2193b0;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: background-color 0.2s ease;
+      }
+
+      .refresh-btn:hover {
+        background: #1a7a96;
       }
     </style>
   </head>
@@ -211,21 +399,61 @@
         ><strong>LANDrop</strong></a
       >
     </h1>
-    <p>Select files to upload from this device</p>
-    <div id="drop-area">
-      <input type="file" id="file" multiple />
-      <p>or drag & drop files here</p>
+
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+      <button class="tab-button active" onclick="showTab('upload')">
+        Upload Files
+      </button>
+      <button class="tab-button" onclick="showTab('browse')">
+        Browse & Download
+      </button>
     </div>
 
-    <!-- Simple file list for removal -->
-    <div id="selected-files" style="margin: 10px 0; display: none">
-      <p style="margin: 5px 0; font-size: 0.9em; color: #666">
-        Selected files:
-      </p>
-      <div id="file-list"></div>
+    <!-- Upload Tab -->
+    <div id="upload-tab" class="tab-content active">
+      <p>Select files to upload from this device</p>
+      <div id="drop-area">
+        <input type="file" id="file" multiple />
+        <p>or drag & drop files here</p>
+      </div>
+
+      <!-- Simple file list for removal -->
+      <div id="selected-files" style="margin: 10px 0; display: none">
+        <p style="margin: 5px 0; font-size: 0.9em; color: #666">
+          Selected files:
+        </p>
+        <div id="file-list"></div>
+      </div>
+
+      <button onclick="upload()">Upload</button>
     </div>
 
-    <button onclick="upload()">Upload</button>
+    <!-- Browse Tab -->
+    <div id="browse-tab" class="tab-content">
+      <p>Browse and download files from this device</p>
+      <div id="file-browser">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+          "
+        >
+          <div id="current-path" style="font-weight: bold; flex-grow: 1"></div>
+          <button
+            onclick="refreshBrowser()"
+            class="refresh-btn"
+            title="Refresh"
+          >
+            🔄 Refresh
+          </button>
+        </div>
+        <p id="browser-status">Loading...</p>
+        <div id="browser-content"></div>
+      </div>
+    </div>
 
     <div id="progress"><div id="bar"></div></div>
     <p id="status"></p>
@@ -548,6 +776,181 @@
           document.getElementById("version").innerText =
             "LAN Drop (version info unavailable)";
         });
+
+      // Tab functionality
+      function showTab(tabName) {
+        // Hide all tab contents
+        const tabContents = document.querySelectorAll(".tab-content");
+        tabContents.forEach((tab) => tab.classList.remove("active"));
+
+        // Remove active class from all tab buttons
+        const tabButtons = document.querySelectorAll(".tab-button");
+        tabButtons.forEach((btn) => btn.classList.remove("active"));
+
+        // Show selected tab
+        document.getElementById(tabName + "-tab").classList.add("active");
+
+        // Add active class to clicked button
+        event.target.classList.add("active");
+
+        // Load file browser if browse tab is selected
+        if (tabName === "browse") {
+          loadFileBrowser(".");
+        }
+      }
+
+      // File browser functionality
+      let currentBrowserPath = ".";
+
+      function loadFileBrowser(path = ".") {
+        currentBrowserPath = path;
+        const browserContent = document.getElementById("browser-content");
+        const browserStatus = document.getElementById("browser-status");
+        const currentPathEl = document.getElementById("current-path");
+
+        // Safety check for elements
+        if (!browserContent || !currentPathEl) {
+          console.error("Required elements not found for file browser");
+          return;
+        }
+
+        browserStatus.innerText = "Loading...";
+        currentPathEl.innerText = `Current path: ${
+          path === "." ? "/" : "/" + path
+        }`;
+
+        fetch(`/files?path=${encodeURIComponent(path)}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `HTTP ${response.status}: ${response.statusText}`
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            displayFiles(data.files, path);
+          })
+          .catch((error) => {
+            console.error("Error loading files:", error);
+            if (browserStatus) {
+              browserStatus.innerText = `Error: ${error.message}`;
+            }
+          });
+      }
+
+      function displayFiles(files, currentPath) {
+        const browserContent = document.getElementById("browser-content");
+        const browserStatus = document.getElementById("browser-status");
+
+        if (!files || files.length === 0) {
+          browserStatus.innerText = "No files found";
+          return;
+        }
+
+        browserStatus.innerText = "";
+        browserContent.innerHTML = "";
+
+        // Add back button if not in root directory
+        if (currentPath !== ".") {
+          const backBtn = document.createElement("button");
+          backBtn.className = "back-btn";
+          backBtn.textContent = "← Back";
+          backBtn.onclick = () => {
+            const parentPath =
+              currentPath.split("/").slice(0, -1).join("/") || ".";
+            loadFileBrowser(parentPath);
+          };
+          browserContent.appendChild(backBtn);
+        }
+
+        // Sort files: directories first, then files
+        files.sort((a, b) => {
+          if (a.isDirectory && !b.isDirectory) return -1;
+          if (!a.isDirectory && b.isDirectory) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        files.forEach((file) => {
+          const item = document.createElement("div");
+          item.className = `browser-item ${
+            file.isDirectory ? "directory" : "file"
+          }`;
+
+          const fileInfo = document.createElement("div");
+          fileInfo.className = "file-info";
+
+          const fileName = document.createElement("div");
+          fileName.className = "file-name-browser";
+          fileName.textContent = file.name;
+
+          const fileDetails = document.createElement("div");
+          fileDetails.className = "file-details";
+
+          if (file.isDirectory) {
+            fileDetails.textContent = `Modified: ${file.modTime}`;
+          } else {
+            fileDetails.textContent = `${formatFileSize(
+              file.size
+            )} • Modified: ${file.modTime}`;
+          }
+
+          fileInfo.appendChild(fileName);
+          fileInfo.appendChild(fileDetails);
+          item.appendChild(fileInfo);
+
+          if (file.isDirectory) {
+            // Make directory clickable
+            item.onclick = () => loadFileBrowser(file.relativePath);
+          } else {
+            // Add download button for files
+            const downloadBtn = document.createElement("button");
+            downloadBtn.className = "download-btn";
+            downloadBtn.textContent = "Download";
+            downloadBtn.onclick = (e) => {
+              e.stopPropagation();
+              downloadFile(file.relativePath, file.name);
+            };
+            item.appendChild(downloadBtn);
+          }
+
+          browserContent.appendChild(item);
+        });
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+      }
+
+      function downloadFile(filePath, fileName) {
+        const status = document.getElementById("status");
+        status.innerText = `Downloading ${fileName}...`;
+
+        // Create a temporary link element and trigger download
+        const link = document.createElement("a");
+        link.href = `/download?file=${encodeURIComponent(filePath)}`;
+        link.download = fileName;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Update status
+        setTimeout(() => {
+          status.innerText = `Downloaded: ${fileName}`;
+          setTimeout(() => {
+            status.innerText = "";
+          }, 3000);
+        }, 1000);
+      }
+
+      function refreshBrowser() {
+        loadFileBrowser(currentBrowserPath);
+      }
 
       window.onload = () => {
         connectP2P();

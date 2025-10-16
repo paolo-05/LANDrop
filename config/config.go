@@ -12,6 +12,8 @@ type Preferences struct {
 	ShowNotifications bool
 	AutoUpdateCheck   bool
 	AutoOpenFiles     bool
+	EnableDownloads   bool
+	SharedDir         string
 }
 
 // LoadPreferences loads preferences using Fyne's preferences API
@@ -22,6 +24,8 @@ func LoadPreferences(app fyne.App) Preferences {
 	defaultShowNotifications := true
 	defaultAutoUpdateCheck := true
 	defaultAutoOpenFiles := true
+	defaultEnableDownloads := true
+	defaultSharedDir := "./shared"
 
 	// Load from Fyne preferences
 	p := Preferences{
@@ -30,6 +34,8 @@ func LoadPreferences(app fyne.App) Preferences {
 		ShowNotifications: app.Preferences().BoolWithFallback("show_notifications", defaultShowNotifications),
 		AutoUpdateCheck:   app.Preferences().BoolWithFallback("auto_update_check", defaultAutoUpdateCheck),
 		AutoOpenFiles:     app.Preferences().BoolWithFallback("auto_open_files", defaultAutoOpenFiles),
+		EnableDownloads:   app.Preferences().BoolWithFallback("enable_downloads", defaultEnableDownloads),
+		SharedDir:         app.Preferences().StringWithFallback("shared_dir", defaultSharedDir),
 	}
 
 	return p
@@ -42,8 +48,14 @@ func SavePreferences(app fyne.App, p Preferences) {
 	app.Preferences().SetBool("show_notifications", p.ShowNotifications)
 	app.Preferences().SetBool("auto_update_check", p.AutoUpdateCheck)
 	app.Preferences().SetBool("auto_open_files", p.AutoOpenFiles)
+	app.Preferences().SetBool("enable_downloads", p.EnableDownloads)
+	app.Preferences().SetString("shared_dir", p.SharedDir)
 }
 
 func EnsureUploadDir(p Preferences) {
 	os.MkdirAll(p.UploadDir, os.ModePerm)
+}
+
+func EnsureSharedDir(p Preferences) {
+	os.MkdirAll(p.SharedDir, os.ModePerm)
 }
