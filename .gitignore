@@ -46,3 +46,7 @@ lan-drop
 # live reload temp files
 /tmp
 .air.TOML
+
+# LAN drop directories
+uploads/
+shared/
