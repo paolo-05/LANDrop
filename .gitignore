@@ -50,3 +50,9 @@ lan-drop
 # LAN drop directories
 uploads/
 shared/
+
+# Wiki documentation (managed separately on GitHub)
+/wiki/
+
+test_onboarding.sh
+ONBOARDING.md

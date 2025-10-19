@@ -86,6 +86,24 @@ func showSettingsWindow(a fyne.App, prefs *config.Preferences, onSave func(port 
 		selectSharedFolderBtn.Disable()
 	}
 
+	// Restart onboarding button
+	restartOnboardingBtn := widget.NewButton("Restart Setup Wizard", func() {
+		dialog.ShowConfirm("Restart Setup Wizard?",
+			"This will show the initial setup wizard again.\n\nYour current settings will be used as defaults.",
+			func(restart bool) {
+				if restart {
+					w.Close()
+					ShowOnboardingWizard(a, prefs, func() {
+						// Reload preferences after onboarding
+						*prefs = config.LoadPreferences(a)
+						config.EnsureUploadDir(*prefs)
+						config.EnsureSharedDir(*prefs)
+						onSave(prefs.Port, prefs.UploadDir)
+					})
+				}
+			}, w)
+	})
+
 	w.SetContent(container.NewVBox(
 		widget.NewLabelWithStyle("Server Configuration", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
 		widget.NewLabel("HTTP Port:"),
@@ -108,6 +126,9 @@ func showSettingsWindow(a fyne.App, prefs *config.Preferences, onSave func(port 
 		widget.NewSeparator(),
 		widget.NewLabelWithStyle("Updates", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
 		autoUpdateCheckbox,
+		widget.NewSeparator(),
+		widget.NewLabelWithStyle("Help", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+		restartOnboardingBtn,
 		widget.NewSeparator(),
 		saveBtn,
 	))

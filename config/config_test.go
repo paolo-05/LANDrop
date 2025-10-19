@@ -36,6 +36,18 @@ func TestPreferencesDefaults(t *testing.T) {
 	if !prefs.AutoOpenFiles {
 		t.Errorf("Expected default AutoOpenFiles to be true, got %v", prefs.AutoOpenFiles)
 	}
+
+	if !prefs.EnableDownloads {
+		t.Errorf("Expected default EnableDownloads to be true, got %v", prefs.EnableDownloads)
+	}
+
+	if prefs.SharedDir != "./shared" {
+		t.Errorf("Expected default SharedDir to be './shared', got '%s'", prefs.SharedDir)
+	}
+
+	if prefs.OnboardingCompleted {
+		t.Errorf("Expected default OnboardingCompleted to be false, got %v", prefs.OnboardingCompleted)
+	}
 }
 
 func TestSaveAndLoadPreferences(t *testing.T) {
@@ -45,11 +57,13 @@ func TestSaveAndLoadPreferences(t *testing.T) {
 
 	// Create test preferences
 	testPrefs := Preferences{
-		UploadDir:         "/tmp/test-uploads",
-		Port:              9090,
-		ShowNotifications: false,
-		AutoUpdateCheck:   false,
-		AutoOpenFiles:     false,
+		UploadDir:           "/tmp/test-uploads",
+		Port:                9090,
+		ShowNotifications:   false,
+		AutoUpdateCheck:     false,
+		AutoOpenFiles:       false,
+		SharedDir:           "/tmp/test-shared",
+		OnboardingCompleted: true,
 	}
 
 	// Save preferences
@@ -77,6 +91,13 @@ func TestSaveAndLoadPreferences(t *testing.T) {
 
 	if loadedPrefs.AutoOpenFiles != testPrefs.AutoOpenFiles {
 		t.Errorf("Expected AutoOpenFiles %v, got %v", testPrefs.AutoOpenFiles, loadedPrefs.AutoOpenFiles)
+	}
+	if loadedPrefs.SharedDir != testPrefs.SharedDir {
+		t.Errorf("Expected SharedDir '%s', got '%s'", testPrefs.SharedDir, loadedPrefs.SharedDir)
+	}
+
+	if loadedPrefs.OnboardingCompleted != testPrefs.OnboardingCompleted {
+		t.Errorf("Expected OnboardingCompleted %v, got %v", testPrefs.OnboardingCompleted, loadedPrefs.OnboardingCompleted)
 	}
 }
 
@@ -129,5 +150,21 @@ func TestEnsureUploadDirAlreadyExists(t *testing.T) {
 	// Check if directory still exists
 	if _, err := os.Stat(testUploadDir); os.IsNotExist(err) {
 		t.Errorf("Upload directory disappeared: %s", testUploadDir)
+	}
+}
+
+func TestMarkOnboardingCompleted(t *testing.T) {
+	// Create a test app
+	testApp := test.NewApp()
+	defer testApp.Quit()
+
+	// Mark onboarding as completed
+	MarkOnboardingCompleted(testApp)
+
+	// Load preferences to verify
+	loadedPrefs := LoadPreferences(testApp)
+
+	if !loadedPrefs.OnboardingCompleted {
+		t.Errorf("Expected OnboardingCompleted to be true, got %v", loadedPrefs.OnboardingCompleted)
 	}
 }

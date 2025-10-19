@@ -140,3 +140,15 @@ func TestSafeSevePathWithConflicts(t *testing.T) {
 		t.Errorf("Second conflict: expected %s, got %s", expected2, result2)
 	}
 }
+
+func TestSafeSavePathNoDir(t *testing.T) {
+	// Test with a non-existing directory
+	nonExistentDir := filepath.Join(os.TempDir(), "nonexistentdir")
+
+	result := safeSavePath(nonExistentDir, "file.txt")
+	expected := filepath.Join(nonExistentDir, "file.txt")
+
+	if result != expected {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+}

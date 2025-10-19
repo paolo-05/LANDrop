@@ -101,7 +101,7 @@ func ShowUpdateDialog(app fyne.App, window fyne.Window, updateInfo *UpdateInfo, 
 	)
 
 	// Create new dialog with custom content and no default buttons
-	customDialog := dialog.NewCustom(title, "", finalContent, window)
+	customDialog := dialog.NewCustom(title, "Close", finalContent, window)
 	customDialog.Resize(fyne.NewSize(500, 400))
 	customDialog.Show()
 }
@@ -174,7 +174,10 @@ func ManualUpdateCheck(app fyne.App, window fyne.Window, repoOwner, repoName, cu
 	updateChecker := NewUpdateChecker(repoOwner, repoName, currentVersion, app)
 
 	// Show progress dialog
-	progress := dialog.NewProgressInfinite("Checking for updates...", "Please wait", window)
+	content := container.NewVBox(
+		widget.NewLabel("Please wait"),
+		widget.NewProgressBarInfinite())
+	progress := dialog.NewCustomWithoutButtons("Checking for updates...", content, window)
 	progress.Show()
 
 	updateChecker.CheckForUpdatesAsync(func(updateInfo *UpdateInfo, err error) {

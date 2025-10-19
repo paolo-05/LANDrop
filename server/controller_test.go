@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
+	"fmt"
+	"io"
 	"lan-drop/config"
 	"mime/multipart"
 	"net/http"
@@ -333,5 +335,123 @@ func TestHandleUploadNoFiles(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", w.Code)
+	}
+}
+
+func TestHandleUploadSaveError(t *testing.T) {
+	// Use a non-writable directory
+	nonWritableDir := "/root/non_writable_dir"
+	prefs := &config.Preferences{
+		UploadDir:         nonWritableDir,
+		Port:              8080,
+		ShowNotifications: true,
+		AutoUpdateCheck:   true,
+		AutoOpenFiles:     true,
+	}
+
+	controller := NewServerController(8080, nonWritableDir, prefs, testEmbeddedFiles, "test-version")
+
+	// Create a multipart form with a file
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	// Add a file
+	fileWriter, err := writer.CreateFormFile("file", "test.txt")
+	if err != nil {
+		t.Fatalf("Failed to create form file: %v", err)
+	}
+	fileWriter.Write([]byte("Hello, World!"))
+
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/upload", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	w := httptest.NewRecorder()
+
+	controller.handleUpload(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("Expected status 500, got %d", w.Code)
+	}
+}
+
+func copyFileToSharedDir(sourcePath, destDir string) error {
+	// Open source file
+	sourceFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("failed to open source file: %w", err)
+	}
+	defer sourceFile.Close()
+
+	// Create destination file
+	destFile, err := os.Create(filepath.Join(destDir, filepath.Base(sourcePath)))
+	if err != nil {
+		return fmt.Errorf("failed to create destination file: %w", err)
+	}
+	defer destFile.Close()
+
+	// Copy file contents
+	if _, err := io.Copy(destFile, sourceFile); err != nil {
+		return fmt.Errorf("failed to copy file contents: %w", err)
+	}
+
+	return nil
+}
+func TestCopyFileToSharedDir(t *testing.T) {
+	// Create a temporary source file
+	tempDir := t.TempDir()
+	sourceFilePath := filepath.Join(tempDir, "testfile.txt")
+	err := os.WriteFile(sourceFilePath, []byte("test content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create source file: %v", err)
+	}
+
+	// Create a temporary destination directory
+	destDir := t.TempDir()
+
+	// Call the function to copy the file
+	err = copyFileToSharedDir(sourceFilePath, destDir)
+	if err != nil {
+		t.Fatalf("copyFileToSharedDir failed: %v", err)
+	}
+
+	// Verify the file was copied
+	destFilePath := filepath.Join(destDir, "testfile.txt")
+	if _, err := os.Stat(destFilePath); os.IsNotExist(err) {
+		t.Fatalf("Destination file does not exist: %v", err)
+	}
+
+	// Verify the contents of the copied file
+	content, err := os.ReadFile(destFilePath)
+	if err != nil {
+		t.Fatalf("Failed to read destination file: %v", err)
+	}
+
+	if string(content) != "test content" {
+		t.Errorf("Expected file content 'test content', got '%s'", string(content))
+	}
+}
+
+func TestStatusReporting(t *testing.T) {
+	mock := &mockStatusReporter{}
+	messages := []string{
+		"File upload started",
+		"File upload in progress",
+		"File upload completed",
+	}
+
+	for _, msg := range messages {
+		mock.recordMessage(msg)
+	}
+
+	receivedMessages := mock.getMessages()
+	if len(receivedMessages) != len(messages) {
+		t.Errorf("Expected %d messages, got %d", len(messages), len(receivedMessages))
+	}
+
+	for i, msg := range messages {
+		if receivedMessages[i] != msg {
+			t.Errorf("Message %d: expected '%s', got '%s'", i, msg, receivedMessages[i])
+		}
 	}
 }

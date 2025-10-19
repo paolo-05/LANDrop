@@ -83,6 +83,20 @@ func copyFileToShared(sourcePath string, sharedDir string, statusLabel *widget.L
 }
 
 func Start(a fyne.App, prefs *config.Preferences, controller *server.ServerController, version string) {
+	// Check if onboarding has been completed
+	if !prefs.OnboardingCompleted {
+		// Show onboarding wizard before creating the main window
+		ShowOnboardingWizard(a, prefs, func() {
+			// After onboarding completes, reload preferences and continue
+			*prefs = config.LoadPreferences(a)
+			// Ensure directories exist with new settings
+			config.EnsureUploadDir(*prefs)
+			config.EnsureSharedDir(*prefs)
+			// Update controller with new settings
+			controller.Update(prefs.Port, prefs.UploadDir)
+		})
+	}
+
 	w := a.NewWindow("LAN Drop v" + version)
 
 	url := fmt.Sprintf("http://%s:%d", utils.GetLocalIP(), prefs.Port)
