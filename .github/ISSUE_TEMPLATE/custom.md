@@ -1,10 +1,7 @@
 ---
 name: Custom issue template
-about: Describe this issue template's purpose here.
-title: ''
-labels: ''
-assignees: ''
-
+about: If none of the other templates serve your needs, feel free to create a custom issue.
+title: ""
+labels: ""
+assignees: paolo-05
 ---
-
-
